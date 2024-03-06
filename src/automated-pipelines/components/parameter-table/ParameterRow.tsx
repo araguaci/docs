@@ -1,7 +1,6 @@
 import cx from 'classnames'
 
-import { useTranslation } from 'components/hooks/useTranslation'
-import { KeyboardEventHandler } from 'react'
+import { useTranslation } from 'src/languages/components/useTranslation'
 import { ChildBodyParametersRows } from './ChildBodyParametersRows'
 import type { ChildParameter } from './types'
 
@@ -11,7 +10,7 @@ type Props = {
   numPreviews?: number
   isChild?: boolean
   rowIndex?: number
-  bodyParamExpandCallback?: KeyboardEventHandler<HTMLButtonElement> | undefined
+  bodyParamExpandCallback?: (target: HTMLDetailsElement) => void
   clickedBodyParameterName?: string | undefined
 }
 
@@ -41,10 +40,10 @@ export function ParameterRow({
   numPreviews = 0,
   isChild = false,
   rowIndex = 0,
-  bodyParamExpandCallback = undefined,
-  clickedBodyParameterName = undefined,
+  bodyParamExpandCallback,
+  clickedBodyParameterName,
 }: Props) {
-  const { t } = useTranslation(['parameter_table', 'products'])
+  const { t } = useTranslation(['parameter_table'])
 
   // This will be true if `rowParams` does not have a key called `default`
   // and it will be true if it does and its actual value is `undefined`.
@@ -159,7 +158,7 @@ export function ParameterRow({
           an API request to get the nested parameter data.
        */}
       {rowParams.type &&
-      (rowParams.type === 'object' || rowParams.type.includes('array of')) &&
+      (rowParams.type.includes('object') || rowParams.type.includes('array of')) &&
       rowParams.childParamsGroups &&
       rowParams.childParamsGroups.length === 0 &&
       !NO_CHILD_WEBHOOK_PROPERTIES.includes(rowParams.name) ? (
@@ -168,7 +167,12 @@ export function ParameterRow({
             <details
               data-nested-param-id={rowParams.name}
               className="box px-3 ml-1 mb-0"
-              onToggle={bodyParamExpandCallback}
+              onToggle={(event) => {
+                if (bodyParamExpandCallback) {
+                  const target = event.target as HTMLDetailsElement
+                  bodyParamExpandCallback(target)
+                }
+              }}
             >
               <summary role="button" aria-expanded="false" className="mb-2 keyboard-focus">
                 {rowParams.oneOfObject ? (

@@ -10,7 +10,6 @@ redirect_from:
 versions:
   fpt: '*'
   ghes: '*'
-  ghae: '*'
   ghec: '*'
 topics:
   - Pull requests
@@ -24,6 +23,8 @@ Anyone with write permissions to a repository can set the state for any status c
 You can see the overall state of the last commit to a branch on your repository's branches page or in your repository's list of pull requests.
 
 {% data reusables.pull_requests.required-checks-must-pass-to-merge %}
+
+{% data reusables.actions.workflows.skipped-job-status-checks-passing %}
 
 ## Types of status checks on {% data variables.product.product_name %}
 
@@ -77,6 +78,8 @@ Alternatively, to skip or request _all_ checks for your commit, add one of the f
   >
   request-checks: true"
   ```
+
+{% data reusables.commits.about-commit-cleanup %}
 
 {% ifversion status-check-retention %}
 

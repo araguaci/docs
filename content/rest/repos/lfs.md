@@ -1,11 +1,10 @@
 ---
-title: Git LFS
+title: REST API endpoints for Git LFS
+shortTitle: Git LFS
 intro: >-
   Use the REST API to enable or disable {% data
   variables.large_files.product_name_long %} (LFS) for a repository.
 versions: # DO NOT MANUALLY EDIT. CHANGES WILL BE OVERWRITTEN BY A 🤖
-  fpt: '*'
-  ghae: '*'
   ghec: '*'
   ghes: '*'
 topics:

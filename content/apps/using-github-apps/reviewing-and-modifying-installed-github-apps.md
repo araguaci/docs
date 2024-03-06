@@ -5,7 +5,6 @@ intro: "You can review the permissions and change the repository access for {% d
 versions:
   fpt: '*'
   ghes: '*'
-  ghae: '*'
   ghec: '*'
 topics:
   - GitHub Apps
@@ -72,3 +71,8 @@ In addition to reviewing {% data variables.product.prodname_github_apps %} that 
 1. To uninstall a {% data variables.product.prodname_github_app %} and block it from accessing resources owned by your account, click **Uninstall**.
 
    When you delete a {% data variables.product.prodname_github_app %}, your authorization of the app (if the app is installed on your personal account) or the authorization of the app by members of your organization (if the app is installed on an organization) will be revoked. For more information, see "[AUTOTITLE](/apps/using-github-apps/authorizing-github-apps)."
+
+## Further reading
+
+- "[AUTOTITLE](/apps/using-github-apps/reviewing-and-revoking-authorization-of-github-apps)"
+- "[AUTOTITLE](/apps/using-github-apps/internal-github-apps)"

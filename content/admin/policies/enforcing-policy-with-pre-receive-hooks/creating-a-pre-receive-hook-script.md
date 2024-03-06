@@ -25,7 +25,7 @@ A pre-receive hook script executes in a pre-receive hook environment on {% data 
 
 After a push occurs and before any refs are updated for the remote repository, the `git-receive-pack` process on {% data variables.location.product_location %} invokes the pre-receive hook script. Standard input for the script, `stdin`, is a string containing a line for each ref to update. Each line contains the old object name for the ref, the new object name for the ref, and the full name of the ref.
 
-```
+```shell
 <old-value> SP <new-value> SP <ref-name> LF
 ```
 
@@ -84,14 +84,14 @@ The `$GITHUB_VIA` variable is available in the pre-receive hook environment when
 
 | Value | Action | More information |
 | :- | :- | :- |
-| <pre>auto-merge deployment api</pre> | Automatic merge of the base branch via a deployment created with the API | "[AUTOTITLE](/rest/deployments#create-a-deployment)" in the REST API documentation |
+| <pre>auto-merge deployment api</pre> | Automatic merge of the base branch via a deployment created with the API | "[AUTOTITLE](/rest/deployments#create-a-deployment)" |
 | <pre>blob#save</pre> | Change to a file's contents in the web interface | "[AUTOTITLE](/repositories/working-with-files/managing-files/editing-files)" |
-| <pre>branch merge api</pre> | Merge of a branch via the API | "[AUTOTITLE](/rest/branches#merge-a-branch)" in the REST API documentation |
+| <pre>branch merge api</pre> | Merge of a branch via the API | "[AUTOTITLE](/rest/branches#merge-a-branch)" |
 | <pre>branches page delete button</pre> | Deletion of a branch in the web interface | "[AUTOTITLE](/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#deleting-a-branch)" |
-| <pre>git refs create api</pre> | Creation of a ref via the API | "[AUTOTITLE](/rest/git#create-a-reference)" in the REST API documentation |
-| <pre>git refs delete api</pre> | Deletion of a ref via the API | "[AUTOTITLE](/rest/git#delete-a-reference)" in the REST API documentation |
-| <pre>git refs update api</pre> | Update of a ref via the API | "[AUTOTITLE](/rest/git#update-a-reference)" in the REST API documentation |
-| <pre>git repo contents api</pre> | Change to a file's contents via the API | "[AUTOTITLE](/rest/repos#create-or-update-file-contents)" in the REST API documentation |
+| <pre>git refs create api</pre> | Creation of a ref via the API | "[AUTOTITLE](/rest/git#create-a-reference)" |
+| <pre>git refs delete api</pre> | Deletion of a ref via the API | "[AUTOTITLE](/rest/git#delete-a-reference)" |
+| <pre>git refs update api</pre> | Update of a ref via the API | "[AUTOTITLE](/rest/git#update-a-reference)" |
+| <pre>git repo contents api</pre> | Change to a file's contents via the API | "[AUTOTITLE](/rest/repos#create-or-update-file-contents)" |
 {%- ifversion ghes %}
 | `merge` | Merge of a pull request using auto-merge | "[AUTOTITLE](/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request)" |
 {%- endif %}
@@ -103,8 +103,10 @@ The `$GITHUB_VIA` variable is available in the pre-receive hook environment when
 | <pre>pull request revert button</pre> | Revert of a pull request | "[AUTOTITLE](/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/reverting-a-pull-request)" |
 | <pre>releases delete button</pre> | Deletion of a release | "[AUTOTITLE](/repositories/releasing-projects-on-github/managing-releases-in-a-repository#deleting-a-release)" |
 | <pre>stafftools branch restore</pre> | Restoration of a branch from the site admin dashboard | "[AUTOTITLE](/admin/configuration/configuring-your-enterprise/site-admin-dashboard#repositories)" |
-| <pre>tag create api</pre> | Creation of a tag via the API | "[AUTOTITLE](/rest/git#create-a-tag-object)" in the REST API documentation |
+| <pre>tag create api</pre> | Creation of a tag via the API | "[AUTOTITLE](/rest/git#create-a-tag-object)" |
+{%- ifversion ghes < 3.13 %}
 | <pre>slumlord (#SHA)</pre> | Commit via Subversion | "[AUTOTITLE](/get-started/working-with-subversion-on-github/support-for-subversion-clients#making-commits-to-subversion)" |
+{%- endif %}
 | <pre>web branch create</pre> | Creation of a branch via the web interface | "[AUTOTITLE](/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch)" |
 
 #### Available for pull request merges
@@ -114,7 +116,7 @@ The following variables are available in the pre-receive hook environment when t
 | Variable | Description | Example value |
 | :- | :- | :- |
 |  <pre>$GITHUB_PULL_REQUEST_AUTHOR_LOGIN</pre> | Username of account that authored the pull request | octocat |
-|  <pre>$GITHUB_PULL_REQUEST_HEAD</pre> | The name of the pull request's topic branch, in the format `USERNAME:BRANCH` | <nobr>octocat:fix-bug</nobr> |
+|  <pre>$GITHUB_PULL_REQUEST_HEAD</pre> | The name of the pull request's topic branch, in the format `USERNAME:BRANCH` | <span style="white-space: nowrap;">octocat:fix-bug</span> |
 |  <pre>$GITHUB_PULL_REQUEST_BASE</pre> | The name of the pull request's base branch, in the format `USERNAME:BRANCH` | octocat:main |
 
 #### Available for pushes using SSH authentication
@@ -180,7 +182,7 @@ You can test a pre-receive hook script locally before you create or update it on
 
 1. Create a test pre-receive script called `always_reject.sh`. This example script will reject all pushes, which is useful for locking a repository:
 
-   ```
+   ```shell
    #!/usr/bin/env bash
 
    echo "error: rejecting all pushes"

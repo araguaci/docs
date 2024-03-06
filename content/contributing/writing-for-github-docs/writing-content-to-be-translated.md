@@ -2,14 +2,13 @@
 title: Writing content to be translated
 shortTitle: Write content to be translated
 intro: 'Our documentation is translated into multiple languages. How we approach writing the English language documentation can greatly improve the quality of those translations.'
-product: '{% data reusables.contributing.product-note %}'
 versions:
   feature: 'contributing'
 ---
 
 ## About writing content that is translation-friendly
 
-Use the following guidelines to ensure the content you create can be successfully translated. For more information, see "[Style guide](/contributing/writing-for-github-docs/style-guide)."
+Use the following guidelines to ensure the content you create can be successfully translated. For more information, see "[Style guide](/contributing/style-guide-and-content-model/style-guide)."
 
 - Use examples that are generic and can be understood by most people.
 - Avoid examples that are controversial or culturally specific to a group.

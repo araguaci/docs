@@ -10,7 +10,6 @@ redirect_from:
 versions:
   fpt: '*'
   ghes: '*'
-  ghae: '*'
   ghec: '*'
 type: reference
 ---
@@ -157,11 +156,11 @@ For more information on how to use context syntax, see "[AUTOTITLE](/actions/lea
 
 **Required** Configures the path to the action's code and the runtime used to execute the code.
 
-### Example: Using Node.js v16
+### Example: Using Node.js {% ifversion actions-node20-support %}v20{% else %}v16{% endif %}
 
 ```yaml
 runs:
-  using: 'node16'
+  using: {% ifversion actions-node20-support %}'node20'{% else %}'node16'{% endif %}
   main: 'main.js'
 ```
 
@@ -169,7 +168,7 @@ runs:
 
 **Required** The runtime used to execute the code specified in [`main`](#runsmain).
 
-- Use `node16` for Node.js v16.
+- Use {% ifversion actions-node20-support %}`node20` for Node.js v20{% else %}`node16` for Node.js v16{% endif %}.
 
 ### `runs.main`
 
@@ -183,7 +182,7 @@ In this example, the `pre:` action runs a script called `setup.js`:
 
 ```yaml
 runs:
-  using: 'node16'
+  using: {% ifversion actions-node20-support %}'node20'{% else %}'node16'{% endif %}
   pre: 'setup.js'
   main: 'index.js'
   post: 'cleanup.js'
@@ -210,7 +209,7 @@ In this example, the `post:` action runs a script called `cleanup.js`:
 
 ```yaml
 runs:
-  using: 'node16'
+  using: {% ifversion actions-node20-support %}'node20'{% else %}'node16'{% endif %}
   main: 'index.js'
   post: 'cleanup.js'
 ```
@@ -270,7 +269,7 @@ For more information, see "[AUTOTITLE](/actions/learn-github-actions/contexts#gi
 
 #### `runs.steps[*].shell`
 
-**Optional** The shell where you want to run the command. You can use any of the shells listed [here](/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell). Required if `run` is set.
+**Optional** The shell where you want to run the command. You can use any of the shells listed in "[AUTOTITLE](/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell)." Required if `run` is set.
 
 #### `runs.steps[*].if`
 
@@ -366,7 +365,7 @@ runs:
         last_name: Octocat
 ```
 
-{% ifversion ghes or ghae %}
+{% ifversion ghes %}
 
 #### `runs.steps[*].continue-on-error`
 

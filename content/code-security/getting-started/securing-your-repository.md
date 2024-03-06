@@ -8,7 +8,6 @@ redirect_from:
 versions:
   fpt: '*'
   ghes: '*'
-  ghae: '*'
   ghec: '*'
 type: how_to
 topics:
@@ -54,6 +53,12 @@ For more information, see "[AUTOTITLE](/code-security/supply-chain-security/unde
 
 {% data variables.product.prodname_dependabot_alerts %} are generated when {% data variables.product.prodname_dotcom %} identifies a dependency in the dependency graph with a vulnerability. {% ifversion fpt or ghec %}You can enable {% data variables.product.prodname_dependabot_alerts %} for any repository.{% endif %}
 
+{% ifversion dependabot-auto-triage-rules %}
+
+{% data reusables.dependabot.dependabot-alert-rules %}
+
+{% endif %}
+
 {% data reusables.dependabot.quickstart-link %}
 
 {% ifversion fpt or ghec %}
@@ -62,7 +67,6 @@ For more information, see "[AUTOTITLE](/code-security/supply-chain-security/unde
 1. Click **Enable all** next to {% data variables.product.prodname_dependabot_alerts %}.
 {% endif %}
 
-{% data reusables.dependabot.dependabot-alerts-beta %}
 {% ifversion dependabot-alerts-ghes-enablement %}
 {% data reusables.dependabot.dependabot-alerts-enterprise-server-repo-org-enablement %}
 {% else %}
@@ -75,16 +79,14 @@ For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-aler
 
 Dependency review lets you visualize dependency changes in pull requests before they are merged into your repositories. For more information, see "[AUTOTITLE](/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review)."
 
-Dependency review is a {% data variables.product.prodname_GH_advanced_security %} feature. {% ifversion fpt or ghec %}Dependency review is already enabled for all public repositories. {% ifversion fpt %}Organizations that use {% data variables.product.prodname_ghe_cloud %} with {% data variables.product.prodname_advanced_security %} can additionally enable dependency review for private and internal repositories. For more information, see the [{% data variables.product.prodname_ghe_cloud %} documentation](/enterprise-cloud@latest/code-security/getting-started/securing-your-repository#managing-dependency-review). {% endif %}{% endif %}{% ifversion ghec or ghes or ghae %}To enable dependency review for a {% ifversion ghec %}private or internal {% endif %}repository, ensure that the dependency graph is enabled and enable {% data variables.product.prodname_GH_advanced_security %}.
+Dependency review is a {% data variables.product.prodname_GH_advanced_security %} feature. {% ifversion fpt or ghec %}Dependency review is already enabled for all public repositories. {% ifversion fpt %}Organizations that use {% data variables.product.prodname_ghe_cloud %} with {% data variables.product.prodname_advanced_security %} can additionally enable dependency review for private and internal repositories. For more information, see the [{% data variables.product.prodname_ghe_cloud %} documentation](/enterprise-cloud@latest/code-security/getting-started/securing-your-repository#managing-dependency-review). {% endif %}{% endif %}{% ifversion ghec or ghes %}To enable dependency review for a {% ifversion ghec %}private or internal {% endif %}repository, ensure that the dependency graph is enabled and enable {% data variables.product.prodname_GH_advanced_security %}.
 
 1. From the main page of your repository, click **{% octicon "gear" aria-label="The Settings gear" %}Settings**.
 1. Click **Security & analysis**.
-1. {% ifversion ghec %}If dependency graph is not already enabled, click **Enable**.{% elsif ghes or ghae %}Check that dependency graph is configured for your enterprise.{% endif %}
+1. {% ifversion ghec %}If dependency graph is not already enabled, click **Enable**.{% elsif ghes %}Check that dependency graph is configured for your enterprise.{% endif %}
 1. If {% data variables.product.prodname_GH_advanced_security %} is not already enabled, click **Enable**.
 
 {% endif %}
-
-{% ifversion fpt or ghec or ghes %}
 
 ## Managing {% data variables.product.prodname_dependabot_security_updates %}
 
@@ -103,18 +105,16 @@ You can enable {% data variables.product.prodname_dependabot %} to automatically
 {% ifversion dependabot-settings-update-37 %}
 1. From the main page of your repository, click **{% octicon "gear" aria-label="The Settings gear" %} Settings**.
 1. Click **Security & analysis**.
-1. Next to {% data variables.product.prodname_dependabot_version_updates %}, click **Enable** to create a basic _dependabot.yml_ configuration file.
-1. Specify the dependencies to update and commit the file to the repository. For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates#enabling-dependabot-version-updates)."
+1. Next to {% data variables.product.prodname_dependabot_version_updates %}, click **Enable** to create a basic `dependabot.yml` configuration file.
+1. Specify the dependencies to update and any associated configuration options, then commit the file to the repository. For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates#enabling-dependabot-version-updates)."
 
 {% else %}
-To enable {% data variables.product.prodname_dependabot_version_updates %}, you must create a _dependabot.yml_ configuration file. For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates)."
-{% endif %}
-
+To enable {% data variables.product.prodname_dependabot_version_updates %}, you must create a `dependabot.yml` configuration file. For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates)."
 {% endif %}
 
 ## Configuring {% data variables.product.prodname_code_scanning %}
 
-You can configure {% data variables.product.prodname_code_scanning %} to automatically identify vulnerabilities and errors in the code stored in your repository by using a {% data variables.code-scanning.codeql_workflow %} or third-party tool.{% ifversion code-scanning-without-workflow %} Depending on the programming languages in your repository, you can configure {% data variables.product.prodname_code_scanning %} with {% data variables.product.prodname_codeql %} using default setup, in which {% data variables.product.prodname_dotcom %} automatically determines the languages to scan, query suites to run, and events that will trigger a new scan. For more information, see "[AUTOTITLE](/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-default-setup-for-code-scanning)."{% else %} For more information, see "[AUTOTITLE](/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-advanced-setup-for-code-scanning)."{% endif %}
+You can configure {% data variables.product.prodname_code_scanning %} to automatically identify vulnerabilities and errors in the code stored in your repository by using a {% data variables.code-scanning.codeql_workflow %} or third-party tool.{% ifversion code-scanning-without-workflow %} Depending on the programming languages in your repository, you can configure {% data variables.product.prodname_code_scanning %} with {% data variables.product.prodname_codeql %} using default setup, in which {% data variables.product.prodname_dotcom %} automatically determines the languages to scan, query suites to run, and events that will trigger a new scan. For more information, see "[AUTOTITLE](/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)."{% else %} For more information, see "[AUTOTITLE](/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/configuring-advanced-setup-for-code-scanning)."{% endif %}
 
 {% ifversion code-scanning-without-workflow %}
 
@@ -123,11 +123,11 @@ You can configure {% data variables.product.prodname_code_scanning %} to automat
 1. In the "{% data variables.product.prodname_code_scanning_caps %}" section, select **Set up** {% octicon "triangle-down" aria-hidden="true" %}, then click **Default**.
 1. In the pop-up window that appears, review the default configuration settings for your repository, then click **Enable {% data variables.product.prodname_codeql %}**.
 
-Alternatively, you can use advanced setup, which generates a workflow file you can edit to customize your {% data variables.product.prodname_code_scanning %} with {% data variables.product.prodname_codeql %}. For more information, see "[AUTOTITLE](/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-advanced-setup-for-code-scanning#configuring-advanced-setup-for-code-scanning-with-codeql)."
+Alternatively, you can use advanced setup, which generates a workflow file you can edit to customize your {% data variables.product.prodname_code_scanning %} with {% data variables.product.prodname_codeql %}. For more information, see "[AUTOTITLE](/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/configuring-advanced-setup-for-code-scanning#configuring-advanced-setup-for-code-scanning-with-codeql)."
 
 {% endif %}
 
-{% data variables.product.prodname_code_scanning_caps %} is available {% ifversion fpt or ghec %}for all public repositories, and for private repositories owned by organizations that are part of an enterprise with a license for {% else %}for organization-owned repositories if your enterprise uses {% endif %}{% data variables.product.prodname_GH_advanced_security %}.
+{% data variables.product.prodname_code_scanning_caps %} is available {% ifversion fpt or ghec %}for all public repositories, and for private repositories owned by organizations that are part of an enterprise with a license for {% else %}for organization-owned repositories if your enterprise uses {% endif %}{% data variables.product.prodname_GH_advanced_security %}. {% data reusables.secret-scanning.secret-scanning-user-owned-repos-beta %}
 
 ## Configuring {% data variables.product.prodname_secret_scanning %}
 
@@ -135,7 +135,7 @@ Alternatively, you can use advanced setup, which generates a workflow file you c
 
 1. From the main page of your repository, click **{% octicon "gear" aria-label="The Settings gear" %}Settings**.
 1. Click **Code security & analysis**.
-{% ifversion ghec or ghes or ghae%}
+{% ifversion ghec or ghes %}
 1. If {% data variables.product.prodname_GH_advanced_security %} is not already enabled, click **Enable**.{% endif %}
 1. Next to {% data variables.product.prodname_secret_scanning_caps %}, click **Enable**.
 
@@ -152,9 +152,11 @@ For more information, see "[AUTOTITLE](/code-security/getting-started/adding-a-s
 
 ## Next steps
 
-You can view and manage alerts from security features to address dependencies and vulnerabilities in your code. For more information, see {% ifversion fpt or ghes or ghec %} "[AUTOTITLE](/code-security/dependabot/dependabot-alerts/viewing-and-updating-dependabot-alerts),"{% endif %} {% ifversion fpt or ghec or ghes %}"[AUTOTITLE](/code-security/dependabot/working-with-dependabot/managing-pull-requests-for-dependency-updates)," {% endif %}"[AUTOTITLE](/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/managing-code-scanning-alerts-for-your-repository)," and "[AUTOTITLE](/code-security/secret-scanning/managing-alerts-from-secret-scanning)".
+You can view and manage alerts from security features to address dependencies and vulnerabilities in your code. For more information, see "[AUTOTITLE](/code-security/dependabot/dependabot-alerts/viewing-and-updating-dependabot-alerts)," "[AUTOTITLE](/code-security/dependabot/working-with-dependabot/managing-pull-requests-for-dependency-updates)," "[AUTOTITLE](/code-security/code-scanning/managing-code-scanning-alerts/managing-code-scanning-alerts-for-your-repository)," and "[AUTOTITLE](/code-security/secret-scanning/managing-alerts-from-secret-scanning)".
 
 You can also use {% data variables.product.prodname_dotcom %}'s tools to audit responses to security alerts. For more information, see "[AUTOTITLE](/code-security/getting-started/auditing-security-alerts)".
 
-{% ifversion fpt or ghec %}If you have a security vulnerability, you can create a security advisory to privately discuss and fix the vulnerability. For more information, see "[AUTOTITLE](/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories)" and "[AUTOTITLE](/code-security/security-advisories/repository-security-advisories/creating-a-repository-security-advisory)."
+{% ifversion fpt or ghec %}If you have a security vulnerability, you can create a security advisory to privately discuss and fix the vulnerability. For more information, see "[AUTOTITLE](/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories)" and "[AUTOTITLE](/code-security/security-advisories/working-with-repository-security-advisories/creating-a-repository-security-advisory)."
 {% endif %}
+
+{% data reusables.security-overview.security-information-about-actions %}

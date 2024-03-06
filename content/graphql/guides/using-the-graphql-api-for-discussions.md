@@ -14,7 +14,7 @@ This API is available for authenticated users, {% data variables.product.prodnam
 
 ### Repository.discussions
 
-List the discussions within a repository. If `categoryId` is specified, only results within that category will be returned.
+List the discussions within a repository. If `categoryId` is specified, only results within that category will be returned. {% ifversion answered-fields-for-discussions %}If `answered` is not specified, both answered and unanswered discussions will be returned.{% endif %}
 
 _Signature:_
 
@@ -25,6 +25,9 @@ discussions(
   first: Int,
   last: Int,
   categoryId: ID = null,
+  {%- ifversion answered-fields-for-discussions %}
+  answered: Boolean = null,
+  {%- endif %}
   orderBy: DiscussionOrder = {field: UPDATED_AT, direction: DESC}
 ) : Discussion
 ```
@@ -156,6 +159,13 @@ type Discussion implements Comment & Deletable & Lockable & Node & Reactable & R
   Reason that the conversation was locked.
   """
   activeLockReason: LockReason
+
+  {%- ifversion answered-fields-for-discussions %}
+  """
+  Check if this discussion has been answered
+  """
+  isAnswered: Boolean!
+  {%- endif %}
 
   """
   The comment chosen as this discussion's answer, if any.

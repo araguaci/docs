@@ -2,8 +2,8 @@ import { parseTemplate } from 'url-template'
 import { stringify } from 'javascript-stringify'
 
 import type { CodeSample, Operation } from 'src/rest/components/types'
-import { useVersion } from 'components/hooks/useVersion'
-import { useMainContext } from 'components/context/MainContext'
+import { useVersion } from 'src/versions/components/useVersion'
+import { useMainContext } from 'src/frame/components/context/MainContext'
 
 type CodeExamples = Record<string, any>
 
@@ -62,7 +62,7 @@ export function getShellExample(operation: Operation, codeSample: CodeSample) {
       if (bodyParameters && typeof bodyParameters === 'object' && !Array.isArray(bodyParameters)) {
         const paramNames = Object.keys(bodyParameters)
         paramNames.forEach((elem) => {
-          requestBodyParams = `${requestBodyParams} ${CURL_CONTENT_TYPE_MAPPING[contentType]} "${elem}=${bodyParameters[elem]}"`
+          requestBodyParams = `${requestBodyParams} ${CURL_CONTENT_TYPE_MAPPING[contentType]} '${elem}=${bodyParameters[elem]}'`
         })
       } else {
         requestBodyParams = `${CURL_CONTENT_TYPE_MAPPING[contentType]} "${bodyParameters}"`
@@ -86,11 +86,18 @@ export function getShellExample(operation: Operation, codeSample: CodeSample) {
         : ''
   }
 
+  let urlArg = `${operation.serverUrl}${requestPath}`
+  // If the `requestPath` contains a `?` character, if you need to escape
+  // the whole URL otherwise, when you paste it into your terminal, it
+  // will fail because the `?` is a bash control character.
+  if (requestPath.includes('?')) {
+    urlArg = `"${urlArg}"`
+  }
   const args = [
     operation.verb !== 'get' && `-X ${operation.verb.toUpperCase()}`,
     `-H "Accept: ${defaultAcceptHeader}" \\\n  ${authHeader}${apiVersionHeader}`,
     contentTypeHeader,
-    `${operation.serverUrl}${requestPath}`,
+    urlArg,
     requestBodyParams,
   ].filter(Boolean)
   return `curl -L \\\n  ${args.join(' \\\n  ')}`
@@ -131,27 +138,41 @@ export function getGHExample(operation: Operation, codeSample: CodeSample) {
   // and the type is a string.
   const { bodyParameters } = codeSample.request
   if (bodyParameters) {
-    if (typeof bodyParameters === 'object' && !Array.isArray(bodyParameters)) {
-      const bodyParamValues = Object.values(codeSample.request.bodyParameters)
-      // GitHub CLI does not support sending Objects and arrays using the -F or
+    if (typeof bodyParameters === 'object') {
+      const bodyParamValues = Object.values(bodyParameters)
+      // GitHub CLI does not support sending Objects using the -F or
       // -f flags. That support may be added in the future. It is possible to
       // use gh api --input to take a JSON object from standard input
       // constructed by jq and piped to gh api. However, we'll hold off on adding
       // that complexity for now.
-      if (bodyParamValues.some((elem) => typeof elem === 'object')) {
+      if (bodyParamValues.some((elem) => typeof elem === 'object' && !Array.isArray(elem))) {
         return undefined
       }
-      requestBodyParams = Object.keys(codeSample.request.bodyParameters)
-        .map((key) => {
-          if (typeof codeSample.request.bodyParameters[key] === 'string') {
-            return `-f ${key}='${codeSample.request.bodyParameters[key]}' `
+      requestBodyParams = Object.entries(bodyParameters)
+        .map(([key, params]) => {
+          if (typeof params === 'string') {
+            return `-f ${key}='${params}' `
+          } else if (Array.isArray(params)) {
+            let cliLine = ''
+            for (const param of params) {
+              if (typeof param === 'string') {
+                cliLine += `-f "${key}[]=${param}" `
+              } else {
+                // When an array of objects is sent, the CLI takes the key and value as two separate arguments
+                // E.g. -F "properties[][property_name]=repo" -F "properties[][value]=docs-internal"
+                for (const [k, v] of Object.entries(param)) {
+                  cliLine += `-F "${key}[][${k}]=${v}" `
+                }
+              }
+            }
+            return cliLine
           } else {
-            return `-F ${key}=${codeSample.request.bodyParameters[key]} `
+            return `-F ${key}=${params} `
           }
         })
         .join('\\\n ')
     } else {
-      requestBodyParams = `-f '${codeSample.request.bodyParameters}'`
+      requestBodyParams = `-f '${bodyParameters}'`
     }
   }
 

@@ -1,9 +1,9 @@
 ---
-title: Commit comments
+title: REST API endpoints for commit comments
+shortTitle: Commit comments
 intro: Use the REST API to interact with commit comments.
 versions: # DO NOT MANUALLY EDIT. CHANGES WILL BE OVERWRITTEN BY A 🤖
   fpt: '*'
-  ghae: '*'
   ghec: '*'
   ghes: '*'
 topics:
@@ -18,8 +18,8 @@ You can create, edit, and view commit comments using the REST API. A commit comm
 
 ### Custom media types for commit comments
 
-These are the supported media types for commit comments. You can read more
-about the use of media types in the API [here](/rest/overview/media-types).
+These are the supported media types for commit comments. For more information
+about the use of media types in the API, see "[AUTOTITLE](/rest/overview/media-types)."
 
     application/vnd.github-commitcomment.raw+json
     application/vnd.github-commitcomment.text+json

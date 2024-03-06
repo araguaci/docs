@@ -14,7 +14,6 @@ redirect_from:
 versions:
   fpt: '*'
   ghes: '*'
-  ghae: '*'
   ghec: '*'
 topics:
   - Pull requests
@@ -49,7 +48,7 @@ To update the remote fork from its parent, use the `gh repo sync -b BRANCHNAME` 
 gh repo sync owner/cli-fork -b BRANCH_NAME
 ```
 
-If the changes from the upstream repository cause conflict then the {% data variables.product.prodname_cli %} can't sync. You can set the `-force` flag to overwrite the destination branch.
+If the changes from the upstream repository cause conflict then the {% data variables.product.prodname_cli %} can't sync. You can set the `--force` flag to overwrite the destination branch.
 
 ## Syncing a fork branch from the command line
 

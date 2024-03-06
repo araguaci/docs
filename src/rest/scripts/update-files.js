@@ -19,7 +19,7 @@ import { existsSync } from 'fs'
 
 import { syncRestData, getOpenApiSchemaFiles } from './utils/sync.js'
 import { validateVersionsOptions } from './utils/get-openapi-schemas.js'
-import { allVersions } from '../../../lib/all-versions.js'
+import { allVersions } from '#src/versions/lib/all-versions.js'
 import { syncWebhookData } from '../../webhooks/scripts/sync.js'
 import { syncGitHubAppsData } from '../../github-apps/scripts/sync.js'
 import { syncRestRedirects } from './utils/get-redirects.js'
@@ -56,11 +56,16 @@ program
     'A list of undeprecated, published versions to build, separated by a space. Example `-v ghes-3.1` or `-v api.github.com github.ae`',
   )
   .option('-d --include-deprecated', 'Includes schemas that are marked as `deprecated: true`')
-  .option('-u --include-unpublished', 'Includes schemas that are marked as `published: false`')
+  .option(
+    '-u --include-unpublished',
+    'Includes operations that are marked as `published: false`. Does not include nodes that are marked as `x-unpublished`.',
+  )
   .option('-n --next', 'Generate the next OpenAPI calendar-date version.')
   .parse(process.argv)
 
 const { versions, includeUnpublished, includeDeprecated, next, output, sourceRepo } = program.opts()
+
+const sourceRepoDirectory = sourceRepo === 'github' ? GITHUB_REP_DIR : REST_API_DESCRIPTION_ROOT
 
 main()
 
@@ -101,6 +106,7 @@ async function main() {
   if (sourceRepo === REST_API_DESCRIPTION_ROOT) {
     const derefDir = await readdir(TEMP_OPENAPI_DIR)
     const currentOpenApiVersions = Object.values(allVersions).map((elem) => elem.openApiVersionName)
+
     derefDir.forEach((schema) => {
       // if the schema does not start with a current version name, delete it
       if (!currentOpenApiVersions.find((version) => schema.startsWith(version))) {
@@ -113,7 +119,7 @@ async function main() {
 
   if (pipelines.includes('rest')) {
     console.log(`\n▶️  Generating REST data files...\n`)
-    await syncRestData(TEMP_OPENAPI_DIR, restSchemas)
+    await syncRestData(TEMP_OPENAPI_DIR, restSchemas, sourceRepoDirectory)
   }
 
   if (pipelines.includes('webhooks')) {
@@ -123,11 +129,7 @@ async function main() {
 
   if (pipelines.includes('github-apps')) {
     console.log(`\n▶️  Generating GitHub Apps data files...\n`)
-    await syncGitHubAppsData(
-      TEMP_OPENAPI_DIR,
-      restSchemas,
-      sourceRepo === 'github' && GITHUB_REP_DIR,
-    )
+    await syncGitHubAppsData(TEMP_OPENAPI_DIR, restSchemas, sourceRepoDirectory)
   }
 
   if (pipelines.includes('rest-redirects')) {
@@ -212,15 +214,21 @@ async function getBundlerOptions() {
 }
 
 async function validateInputParameters() {
-  // The `--versions` and `--decorate-only` options cannot be used
+  // The `--versions` option cannot be used
+  // with the `--include-deprecated` option
+  if (includeDeprecated && versions) {
+    const errorMsg = `🛑 You cannot use the versions option with the include-deprecated option. This is not currently supported in the bundler.\nPlease reach out to #docs-engineering if a new use case should be supported.`
+    throw new Error(errorMsg)
+  }
+
+  // The `--decorate-only` option cannot be used
   // with the `--include-deprecated` or `--include-unpublished` options
-  if ((includeDeprecated || includeUnpublished) && (sourceRepo !== 'github' || versions)) {
-    const errorMsg = `🛑 You cannot use the versions option with the include-unpublished or include-deprecated options. This is not currently supported in the bundler.\nYou cannot use the decorate-only option with  include-unpublished or include-deprecated because the include-unpublished and include-deprecated options are only available when running the bundler. The decorate-only option skips running the bundler.\nPlease reach out to #docs-engineering if a new use case should be supported.`
+  if ((includeDeprecated || includeUnpublished) && sourceRepo !== 'github') {
+    const errorMsg = `🛑 You cannot use the decorate-only option with  include-unpublished or include-deprecated because the include-unpublished and include-deprecated options are only available when running the bundler. The decorate-only option skips running the bundler.\nPlease reach out to #docs-engineering if a new use case should be supported.`
     throw new Error(errorMsg)
   }
 
   // Check that the source repo exists.
-  const sourceRepoDirectory = sourceRepo === 'github' ? GITHUB_REP_DIR : REST_API_DESCRIPTION_ROOT
   if (!existsSync(sourceRepoDirectory)) {
     const errorMsg =
       sourceRepo === 'github'

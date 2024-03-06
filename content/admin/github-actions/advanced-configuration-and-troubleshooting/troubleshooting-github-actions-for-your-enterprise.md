@@ -32,7 +32,7 @@ For the steps required to install a certificate, refer to the documentation for 
 
 Most actions are written in JavaScript and run using Node.js, which does not use the operating system certificate store. For the self-hosted runner application to use the certificate, you must set the `NODE_EXTRA_CA_CERTS` environment variable on the runner machine.
 
-You can set the environment variable as a system environment variable, or declare it in a file named _.env_ in the self-hosted runner application directory.
+You can set the environment variable as a system environment variable, or declare it in a file called `.env` in the self-hosted runner application directory (that is, the directory into which you downloaded and unpacked the runner software).
 
 For example:
 
@@ -50,7 +50,7 @@ If you use Docker container actions or service containers in your workflows, you
 
 {% data reusables.actions.enterprise-http-proxy %}
 
-If these settings aren't correctly configured, you might receive errors like `Resource unexpectedly moved to https://<IP_ADDRESS>` when setting or changing your {% data variables.product.prodname_actions %} configuration.
+If these settings aren't correctly configured, you might receive errors like `Resource unexpectedly moved to https://IP-ADDRESS` when setting or changing your {% data variables.product.prodname_actions %} configuration.
 
 ## Runners not connecting to {% data variables.product.prodname_ghe_server %} with a new hostname
 
@@ -101,7 +101,7 @@ If any of these services are at or near 100% CPU utilization, or the memory is n
 
    In the output, find the "Allocated Resources" section. It looks similar to the following example:
 
-   ```
+   ```text
    Allocated Resources
    CPU              Memory          Disk
    7740/49600 MHZ   23 GiB/32 GiB   4.4 GiB/7.9 GiB
@@ -127,7 +127,7 @@ If any of these services are at or near 100% CPU utilization, or the memory is n
    - `actions.hcl.ctmpl`
 1. For the services that you identified that need adjustment, open the corresponding file and locate the `resources` group that looks like the following:
 
-   ```
+   ```text
    resources {
      cpu = 512
      memory = 2048
@@ -141,7 +141,7 @@ If any of these services are at or near 100% CPU utilization, or the memory is n
 
    For example, to increase the resource limits in the above example to 1 GHz for the CPU and 4 GB of memory, change it to:
 
-   ```
+   ```text
    resources {
      cpu = 1024
      memory = 4096
@@ -157,11 +157,7 @@ If any of these services are at or near 100% CPU utilization, or the memory is n
     When running `ghe-config-apply`, if you see output like `Failed to run nomad job '/etc/nomad-jobs/<name>.hcl'`, then the change has likely over-allocated CPU or memory resources. If this happens, edit the configuration files again and lower the allocated CPU or memory, then re-run `ghe-config-apply`.
 1. After the configuration is applied, run `ghe-actions-check` to verify that the {% data variables.product.prodname_actions %} services are operational.
 
-{% ifversion fpt or ghec or ghes %}
-
 ## Troubleshooting failures when {% data variables.product.prodname_dependabot %} triggers existing workflows
-
-{% data reusables.dependabot.beta-security-and-version-updates %}
 
 After you set up {% data variables.product.prodname_dependabot %} updates for {% data variables.location.product_location %}, you may see failures when existing workflows are triggered by {% data variables.product.prodname_dependabot %} events.
 
@@ -189,8 +185,6 @@ There are three ways to resolve this problem:
     ```
 
 1. Return to {% data variables.product.prodname_ghe_server %}.
-
-{% endif %}
 
 <a name="bundled-actions"></a>
 

@@ -13,8 +13,6 @@ redirect_from:
   - /code-security/codeql-cli/using-the-codeql-cli/publishing-and-using-codeql-packs
 ---
 
-{% data reusables.codeql-cli.codeql-site-migration-note %}
-
 {% data reusables.codeql-cli.beta-note-package-management %}
 
 ## Configuring the `qlpack.yml` file before publishing
@@ -34,6 +32,7 @@ default-suite-file: default-queries.qls # optional, a pointer to a query-suite i
 license: # optional, the license under which the pack is published
 dependencies: # map from CodeQL pack name to version range
 ```
+
 - `name:` must follow the `<scope>/<pack>` format, where `<scope>` is the {% data variables.product.prodname_dotcom %} organization that you will publish to and <pack> is the name for the pack.
 
 - A maximum of one of `default-suite` or `default-suite-file` is allowed. These are two different ways to define a default query suite to be run, the first by specifying queries directly in the qlpack.yml file and the second by specifying a query suite in the pack.
@@ -124,7 +123,7 @@ Compiling query plan for /long/path/to/query/Filename.ql.
 [42/108 comp 25s] Compiled /long/path/to/query/Filename.ql.
 ```
 
-The results of the analysis will still be good in this case, but to get optimal performance you may need to upgrade to a newer version of the {% data variables.product.prodname_codeql %} CLI and/or of the query pack.
+The results of the analysis will still be good in this case, but to get optimal performance you may need to upgrade to a newer version of the {% data variables.product.prodname_codeql_cli %} and/or of the query pack.
 
 If you publish query packs on the {% data variables.product.prodname_container_registry %} on {% data variables.product.prodname_dotcom_the_website %} for others to use, we recommend that you use a recent release of {% data variables.product.prodname_codeql %} to run `codeql pack publish`, and that you publish a fresh version of your pack with an updated {% data variables.product.prodname_codeql %} version before the version you used turns 6 months old. That way you can ensure that users of your pack who keep _their_ {% data variables.product.prodname_codeql %} up to date will benefit from the pre-compiled queries in your pack.
 
@@ -207,6 +206,7 @@ The following properties are supported in `qlpack.yml` files.
 
 - Required by all packs.
 - Defines the scope of the pack, where the {% data variables.product.prodname_codeql %} pack is published, and the name of the pack defined using alphanumeric characters and hyphens. It must be unique as {% data variables.product.prodname_codeql %} cannot differentiate between {% data variables.product.prodname_codeql %} packs with identical names. Use the pack name to specify queries to run using `database analyze` and to define dependencies between {% data variables.product.prodname_codeql %} packs (see examples below). For example:
+
   ```yaml
   name: octo-org/security-queries
   ```
@@ -215,23 +215,38 @@ The following properties are supported in `qlpack.yml` files.
 
 - Required by all packs that are published.
 - Defines a semantic version for this {% data variables.product.prodname_codeql %} pack that must adhere to the [SemVer v2.0.0 specification](https://semver.org/spec/v2.0.0.html). For example:
+
   ```yaml
   version: 0.0.0
   ```
 
+{% ifversion codeql-model-packs-java %}
+
+#### `dataExtensions`
+
+- Required by model packs.
+- Takes a list of glob patterns that specify where data extension files are located relative to the root of the query pack or library pack.
+{% endif %}
+
 #### `dependencies`
 
-- Required by packs that define {% data variables.product.prodname_codeql %} package dependencies on other packs.
+- Required by query and library packs that define {% data variables.product.prodname_codeql %} package dependencies on other packs. Model packs cannot define any dependencies and use `extensionTargets` instead.
 - Defines a map from pack references to the semantic version range that is compatible with this pack. Supported for {% data variables.product.prodname_codeql_cli %} versions v2.6.0 and later. For example:
+
   ```yaml
   dependencies:
     codeql/cpp-all: ^0.0.2
   ```
 
+  If you are unsure or it does not matter which version should be used, then you can use `"*"`, which indicates that any version of this dependency is compatible with this pack. In practice, this will usually resolve to the highest published version of the dependency.
+
+  There is a special version placeholder, `${workspace}`, which indicates that this {% data variables.product.prodname_codeql %} pack depends on whatever version of the dependency is in the same workspace. For more information, see "[AUTOTITLE](/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/about-codeql-workspaces#using-workspace-as-a-version-range-in-qlpackyml-files)."
+
 #### `defaultSuiteFile`
 
 - Required by packs that export a set of default queries to run.
 - Defines the path to a query suite file relative to the package root, containing all of the queries that are run by default when this pack is passed to the `codeql database analyze` command. Supported from CLI version v2.6.0 and onwards. Only one of `defaultSuiteFile` or `defaultSuite` can be defined. For example:
+
   ```yaml
   defaultSuiteFile: cpp-code-scanning.qls
   ```
@@ -240,87 +255,132 @@ The following properties are supported in `qlpack.yml` files.
 
 - Required by packs that export a set of default queries to run.
 - Defines an inlined query suite containing all of the queries that are run by default when this pack is passed to the `codeql database analyze` command. Supported from CLI version v2.6.0 and onwards. Only one of `defaultSuiteFile` or `defaultSuite` can be defined. For example:
+
   ```yaml
   defaultSuite:
     queries: .
     exclude:
       precision: medium
   ```
-  
+
+{% ifversion codeql-model-packs-java %}
+
+#### `extensionTargets`
+
+- Required by model packs.
+- Declares which query packs the extensions in the model pack apply to. The extension pack will inject its data extensions into each pack that is named in the `extensionTargets` dictionary, if the pack falls within the specified version range and it is used in the evaluation.
+{% endif %}
+
+#### `groups`
+
+- Optional.
+- Defines logical groupings of packs in a {% data variables.product.prodname_codeql %} workspace. Using groups is a way to apply pack operations to subsets of packs in a workspace. For example, the following pack is defined to be a part of the `java` and the `experimental` groups:
+
+  ```yaml
+  groups:
+    - java
+    - experimental
+  ```
+
+  Running `codeql pack publish --groups java,-experimental` will publish all of the packs in the `java` group, _except_ the `experimental` packs. You can run the `codeql pack ls --groups [-]<group>[,[-]<group>...]` command to list the packs in a workspace that match the specified set of groups.
+
+  A {% data variables.product.prodname_codeql %} pack in the given workspace is included in the list if:
+
+  - It is in at least one of the groups listed without a minus sign (this condition is automatically satisfied if there are no groups listed without a minus sign), and
+  - It is not in any group listed with a minus sign.
+
 #### `library`
 
 - Required by library packs.
 - Defines a boolean value that indicates whether or not this pack is a library pack. Library packs do not contain queries and are not compiled. Query packs can ignore this field or explicitly set it to `false`. For example:
+
   ```yaml
   library: true
   ```
 
 #### `suites`
 
-- Optional for packs that define query suites.
-- Defines the path to a directory in the pack that contains the query suites you want to make known to the {% data variables.product.prodname_codeql_cli %}, defined relative to the pack directory. {% data variables.product.prodname_codeql %} pack users can run "well-known" suites stored in this directory by specifying the pack name, without providing their full path. This is not supported for {% data variables.product.prodname_codeql %} packs downloaded from the Container registry. For more information about query suites, see "[AUTOTITLE](/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/creating-codeql-query-suites)." For example:
-  ```yaml
-  suites: octo-org-query-suites
-  ```
+- Optional for packs that define query suites. This allows users to run query suites stored in the specified directory by specifying the pack name, without providing the full path.
+- Currently supported only for the standard query packs included in {% data variables.product.prodname_codeql %} CLI bundle.
+- This option is not supported for {% data variables.product.prodname_codeql %} packs downloaded from the {% data variables.product.prodname_dotcom %} container registry.
 
 #### `tests`
+
 - Optional for packs containing {% data variables.product.prodname_codeql %} tests. Ignored for packs without tests.
 - Defines the path to a directory within the pack that contains tests, defined relative to the pack directory. Use `.` to specify the whole pack. Any queries in this directory are run as tests when `test run` is run with the `--strict-test-discovery` option. These queries are ignored by query suite definitions that use `queries` or `qlpack` instructions to ask for all queries in a particular pack. If this property is missing, then `.` is assumed. For example:
+
   ```yaml
   tests: .
   ```
 
 #### `extractor`
+
 - Required by all packs containing {% data variables.product.prodname_codeql %} tests.
 - Defines the {% data variables.product.prodname_codeql %} language extractor to use when running the {% data variables.product.prodname_codeql %} tests in the pack. For more information about testing queries, see "[AUTOTITLE](/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/testing-custom-queries)." For example:
+
   ```yaml
-  extractor: javascript
+  extractor: {% ifversion codeql-language-identifiers-311 %}javascript-typescript{% else %}javascript{% endif %}
   ```
 
 #### `authors`
+
 - Optional.
 - Defines metadata that will be displayed on the packaging search page in the packages section of the account that the {% data variables.product.prodname_codeql %} pack is published to. For example:
+
   ```yaml
-  authors: author1@github.com,author2@github.com 
+  authors: author1@github.com,author2@github.com
   ```
 
 #### `license`
+
 - Optional.
 - Defines metadata that will be displayed on the packaging search page in the packages section of the account that the {% data variables.product.prodname_codeql %} pack is published to. For a list of allowed licenses, see [SPDX License List](https://spdx.org/licenses/) in the SPDX Specification. For example:
+
   ```yaml
   license: MIT
   ```
 
 #### `description`
+
 - Optional.
 - Defines metadata that will be displayed on the packaging search page in the packages section of the account that the {% data variables.product.prodname_codeql %} pack is published to. For example:
+
   ```yaml
   description: Human-readable description of the contents of the {% data variables.product.prodname_codeql %} pack.
   ```
 
 #### `libraryPathDependencies`
+
 - Optional, deprecated. Use the `dependencies` property instead.
 - Previously used to define the names of any {% data variables.product.prodname_codeql %} packs that this {% data variables.product.prodname_codeql %} pack depends on, as an array. This gives the pack access to any libraries, database schema, and query suites defined in the dependency. For example:
+
   ```yaml
-  libraryPathDependencies: codeql/javascript-all 
+  libraryPathDependencies: codeql/javascript-all
   ```
 
 #### `dbscheme`
+
 - Required by core language packs only.
 - Defines the path to the [database schema](https://codeql.github.com/docs/codeql-overview/codeql-glossary/#codeql-database-schema) for all libraries and queries written for this {% data variables.product.prodname_codeql %} language (see example below). For example:
+
   ```yaml
   dbscheme: semmlecode.python.dbscheme
   ```
+
 #### `upgrades`
+
 - Required by core language packs only.
 - Defines the path to a directory within the pack that contains database upgrade scripts, defined relative to the pack directory. Database upgrades are used internally to ensure that a database created with a different version of the {% data variables.product.prodname_codeql_cli %} is compatible with the current version of the CLI. For example:
+
   ```yaml
   upgrades: .
   ```
 
 #### `warnOnImplicitThis`
+
 - Optional. Defaults to `false` if the `warnOnImplicitThis` property is not defined.
 - Defines a boolean that specifies whether or not the compiler should emit warnings about member predicate calls with implicit `this` call receivers, that is, without an explicit receiver. Supported from {% data variables.product.prodname_codeql_cli %} version 2.13.2 and onwards. For example:
+
   ```yaml
   warnOnImplicitThis: true
   ```
@@ -356,7 +416,7 @@ In most cases, the `codeql-pack.lock.yml` file is only relevant for query packs 
 
 ## Examples of custom {% data variables.product.prodname_codeql %} packs
 
-When you write custom queries or tests, you should save them in custom {% data variables.product.prodname_codeql %} packs. For simplicity, try to organize each pack logically. For more information, see "[{% data variables.product.prodname_codeql %} pack structure](#codeql-pack-structure)." Save files for queries and tests in separate packs and, where possible, organize custom packs into specific folders for each target language. This is particularly useful if you intend to publish your {% data variables.product.prodname_codeql %} packs so they can be shared with others or used in code scanning. For more information, see "[AUTOTITLE](/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning-with-codeql)."
+When you write custom queries or tests, you should save them in custom {% data variables.product.prodname_codeql %} packs. For simplicity, try to organize each pack logically. For more information, see "[AUTOTITLE](/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/creating-and-working-with-codeql-packs#codeql-pack-structure)." Save files for queries and tests in separate packs and, where possible, organize custom packs into specific folders for each target language. This is particularly useful if you intend to publish your {% data variables.product.prodname_codeql %} packs so they can be shared with others or used in code scanning. For more information, see "[AUTOTITLE](/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql)."
 
 ### {% data variables.product.prodname_codeql %} packs for custom libraries
 
@@ -384,12 +444,9 @@ version: 1.2.3
 dependencies:
   codeql/cpp-all: ^0.1.2
   my-github-user/my-custom-libraries: ^1.2.3
-suites: my-custom-suites
 ```
 
 where `codeql/cpp-all` is the name of the {% data variables.product.prodname_codeql %} pack for C/C++ analysis included in the {% data variables.product.prodname_codeql %} repository. The version range `^0.1.2` indicates that this pack is compatible with all versions of `codeql/cpp-all` that are greater than or equal to `0.1.2` and less than `0.2.0`. `my-github-user/my-custom-libraries` is the name of a {% data variables.product.prodname_codeql %} pack containing custom {% data variables.product.prodname_codeql %} libraries for C++. Any {% data variables.product.prodname_codeql %} library file (a file with a `.qll` extension) defined in this pack will be available to queries in the `my-github-user/my-custom-queries` pack.
-
-The `suites` property indicates a directory where "well-known" query suites can be found. These suites can be used on the command line by referring to their name only, rather than their full path. For more information about query suites, see "[AUTOTITLE](/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/creating-codeql-query-suites)."
 
 ### {% data variables.product.prodname_codeql %} packs for custom tests
 
